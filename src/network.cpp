@@ -7,7 +7,6 @@
 void Network::resize(const size_t& n){
 	 
 	values.clear();
-	
 	links.clear();
 	/* We call this links.clear() so that in case we reduce the number 
 	 * of nodes we don't have problems with links between non existing nodes*/
@@ -23,13 +22,14 @@ bool Network::add_link(const size_t& a, const size_t& b){
 	size_t min(std::min(a,b));
 	size_t max(std::max(a,b));
 	
+	//Gestion of not Coherent links
 	if( (a==b) or (max >= values.size()) ){
 		return false;
 		
 	}else {
 	
 		for(auto it=links.begin(); it!=links.end(); ++it){
-			
+		//Here I use min and max to reduce the time needed to find both nodes
 			if( ((*it).first == min) and ((*it).second == max)){
 				return false;
 			}
@@ -53,13 +53,20 @@ size_t Network::random_connect(const double& n){
 		
 		size_t degree(RNG.poisson(n));
 		
+		/* It may happen that the mean given by the user is 
+		* near or even above the size of our values vector
+		* Which means it can happen that degree is larger than
+		* the possible links our node i can create
+		* In this case we need to resize the degrees that are above 
+		* our maximun number of links. But this means we will have less
+		* links than predicted if our mean is near to our number of nodes*/
+		
 		if(degree>= size()){
 			degree= size()-1;
 		}	
 		
-		
 		size_t linksCreated(0);
-		
+		 
 		std::mt19937 rng;
 		std::uniform_int_distribution<> distrib(0,values.size()-1);
 		
@@ -79,7 +86,7 @@ size_t Network::random_connect(const double& n){
 
 
 size_t Network::set_values(const std::vector<double>& newValues){
-
+	
 	size_t size(std::min(newValues.size(),values.size()));
 		
 	for( size_t i(0); i<size; ++i){
@@ -128,9 +135,8 @@ std::vector<size_t> Network::neighbors(const size_t& key) const{
 	for(auto it=links.begin(); it!=links.end(); ++it){
 
 		if( (*it).first == key){
-        neighbors.push_back((*it).second);
-		}
-		
+       			neighbors.push_back((*it).second);
+		}	
     }
     
   	return neighbors;
